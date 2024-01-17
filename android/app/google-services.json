@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "50964289178",
+    "project_id": "foodie-connect-backend",
+    "storage_bucket": "foodie-connect-backend.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:50964289178:android:8c93dd1a600d243c19f123",
+        "android_client_info": {
+          "package_name": "com.example.foodie_connect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEGiSUpelX9DtSlx31uCd3Zr2_zea6Fb4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
