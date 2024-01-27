@@ -15,7 +15,6 @@ class _ForewardPageState extends State<ForewardPage>{
 
   User? user = FireBaseService().currentUser;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +34,7 @@ class _ForewardPageState extends State<ForewardPage>{
                       color: Colors.white,
                       border: Border.all(
                         color: Colors.white,
-                        width: 2, // You can adjust the border width
+                        width: 2,
                       ),
                     ),
                     child:  Image.asset(
@@ -73,7 +72,7 @@ class _ForewardPageState extends State<ForewardPage>{
                 ],
               ),
               Container(
-                margin: EdgeInsets.only(top: 40),
+                margin: const EdgeInsets.only(top: 40),
                 alignment: Alignment.centerLeft,
                 child:   Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,15 +102,13 @@ class _ForewardPageState extends State<ForewardPage>{
                   }
 
                   Navigator.pop(context, user);
-
-
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white, // White background
-                  foregroundColor: Color(0xFFFF4B3A), // Black text
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFFFF4B3A),
                   padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 20),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30), // Adjust the border radius as needed
+                    borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 child: const Text(

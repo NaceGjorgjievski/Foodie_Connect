@@ -49,17 +49,12 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Widget _title() {
-    return const Text('Foodie Connect');
-  }
-
   Widget _entryField(
       String title,
       TextEditingController controller,
       ) {
 
     if (isLogin && title == 'Корисничко име') {
-      // Hide the username field when logging in
       return SizedBox.shrink();
     }
 
@@ -68,8 +63,8 @@ class _LoginPageState extends State<LoginPage> {
       style: const TextStyle(color: Colors.white,fontSize: 22.0),
       decoration: InputDecoration(
         labelText: title,
-        hintStyle: TextStyle(color: Colors.white,),
-        labelStyle: TextStyle(color: Colors.white,fontSize: 22),
+        hintStyle: const TextStyle(color: Colors.white,),
+        labelStyle: const TextStyle(color: Colors.white,fontSize: 22),
         hoverColor: Colors.white,
         focusColor: Colors.white,
 
@@ -250,10 +245,29 @@ class _LoginPageState extends State<LoginPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          // TODO: Add Navigation functionality
-          setState(() {
-            _currentIndex = index;
-          });
+          //Clicked Home item
+          if(index == 0){
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage())
+            );
+          }
+
+          // Clicked Profile item
+          if(index==2){
+            // If user is not Logged in go to Login Page
+            if(user == null){
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage())
+              );
+            }
+            // If user is Logged in go to Profile Page
+            else{
+              //TODO Naviate to profile page
+            }
+
+          }
         },
         showSelectedLabels: false,
         showUnselectedLabels: false,

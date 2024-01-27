@@ -2,9 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:foodie_connect/Factories/marker_factory.dart';
 import 'package:foodie_connect/Models/restaurant.dart';
 import 'package:foodie_connect/Pages/foreward_page.dart';
+import 'package:foodie_connect/Pages/login_register_page.dart';
+import 'package:foodie_connect/Pages/map_page.dart';
 import 'package:foodie_connect/Services/firebase_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
@@ -33,7 +37,6 @@ class _HomePageState extends State<HomePage>{
       await requestLocationPermission();
       setState(() { });
     });
-    //requestLocationPermission();
   }
 
   Future<void> getCurrentLocation() async {
@@ -57,7 +60,6 @@ class _HomePageState extends State<HomePage>{
     }
 
     if (status.isGranted) {
-      // Location permission is granted, now get the current location
       getCurrentLocation();
     } else {
       print('Location permission denied.');
@@ -72,7 +74,7 @@ class _HomePageState extends State<HomePage>{
       return;
     }
 
-    final url = 'https://places.googleapis.com/v1/places:searchNearby';
+    const url = 'https://places.googleapis.com/v1/places:searchNearby';
     final requestData = {
       "includedTypes": ["restaurant"],
       "maxResultCount": 5,
@@ -91,16 +93,14 @@ class _HomePageState extends State<HomePage>{
     };
 
     try {
-      // Make the POST request
+
       final response = await http.post(
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(requestData),
       );
 
-      // Check if the request was successful (status code 200)
       if (response.statusCode == 200) {
-        // Parse and handle the response data
         final responseData = jsonDecode(response.body);
         final places = responseData['places'] as List<dynamic>;
         for(var place in places){
@@ -109,7 +109,6 @@ class _HomePageState extends State<HomePage>{
           final latitude = place['location']['latitude'];
           final longitude = place['location']['longitude'];
           final image = place['photos'][0]['name'];
-
 
           var isInDb = await FireBaseService().isRestaurantInDatabase(id);
           if(!isInDb){
@@ -154,11 +153,9 @@ class _HomePageState extends State<HomePage>{
         // Handle the data as needed
         photoUri = data['photoUri'];
       } else {
-        // Handle errors
         print('Error: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle exceptions
       print('Exception: $e');
     }
     return photoUri;
@@ -175,11 +172,6 @@ class _HomePageState extends State<HomePage>{
     });
   }
 
-
-  Widget _userUid() {
-    return Text(user?.email ?? '');
-  }
-
   Widget _signOutButton() {
     return ElevatedButton(
       onPressed: signOut,
@@ -187,11 +179,10 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
-  // Comment Button
+  // Comment Button -> Needs Comment functionality in TODO
   Widget _commentButton(){
     return ElevatedButton(
         onPressed: () async {
-
           //If user is not logged in
           if(user == null){
             final result = await Navigator.push(
@@ -216,6 +207,36 @@ class _HomePageState extends State<HomePage>{
   }
 
 
+  Widget buildCard(Restaurant restaurant) => Container(
+    width: 250,
+    height: 400,
+    decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3), // Shadow color
+            spreadRadius: 5, // Spread radius
+            blurRadius: 10, // Blur radius
+            offset: const Offset(0, 3), // Offset from the top-left corner
+          ),
+        ]
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        Container(
+
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.network(restaurant.imageUri,width: 220,height: 200,fit: BoxFit.cover,),
+            )
+        ),
+        Text(restaurant.name, style: const TextStyle(fontSize: 20), textAlign: TextAlign.center,),
+
+      ],
+    ),
+  );
 
 
 
@@ -246,12 +267,12 @@ class _HomePageState extends State<HomePage>{
                   ),
                   Ink(
                     decoration: const ShapeDecoration(
-                      color: Colors.white, // Set the button color
-                      shape: CircleBorder(), // Circular shape
+                      color: Colors.white,
+                      shape: CircleBorder(),
                       shadows: [
                         BoxShadow(
-                          color: Colors.black, // Shadow color
-                          blurRadius: 4.0, // Spread of the shadow
+                          color: Colors.black,
+                          blurRadius: 4.0,
                         ),
                       ],
                     ),
@@ -263,7 +284,10 @@ class _HomePageState extends State<HomePage>{
                           color: Colors.black,
                         ),
                         onPressed: () {
-                          // Add your button click logic here
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => MapPage(restaurants: restaurants,))
+                          );
                         },
                       ),
                     ),
@@ -285,15 +309,15 @@ class _HomePageState extends State<HomePage>{
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 300,// Ensure TextField takes the remaining space
+                        width: 300,
                         child: TextField(
                           controller: _controllerSearch,
                           decoration: InputDecoration(
                             labelText: 'Пребарувај',
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(40.0), // Set the border radius
+                              borderRadius: BorderRadius.circular(40.0),
                             ),
-                            prefixIcon: Icon(Icons.search),
+                            prefixIcon: const Icon(Icons.search),
                           ),
                           onChanged: (text) {
                             // Handle the input text changes
@@ -307,7 +331,7 @@ class _HomePageState extends State<HomePage>{
             ),
 
             Container(
-              margin: EdgeInsets.only(top: 40),
+              margin: const EdgeInsets.only(top: 40),
               height: 300,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
@@ -328,10 +352,30 @@ class _HomePageState extends State<HomePage>{
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          // TODO: Add Navigation functionality
-          setState(() {
-            _currentIndex = index;
-          });
+
+          //Clicked Home item
+          if(index == 0){
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage())
+            );
+          }
+
+          // Clicked Profile item
+          if(index==2){
+            // If user is not Logged in go to Login Page
+            if(user == null){
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage())
+              );
+            }
+            // If user is Logged in go to Profile Page
+            else{
+              //TODO Naviate to profile page
+            }
+
+          }
         },
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -356,33 +400,3 @@ class _HomePageState extends State<HomePage>{
   }
 }
 
-Widget buildCard(Restaurant restaurant) => Container(
-  width: 250,
-  height: 400,
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(20),
-    color: Colors.white,
-    boxShadow: [
-      BoxShadow(
-      color: Colors.grey.withOpacity(0.3), // Shadow color
-      spreadRadius: 5, // Spread radius
-      blurRadius: 10, // Blur radius
-      offset: Offset(0, 3), // Offset from the top-left corner
-      ),
-    ]
-  ),
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.spaceAround,
-    children: [
-      Container(
-
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Image.network(restaurant.imageUri,width: 220,height: 200,fit: BoxFit.cover,),
-        )
-      ),
-      Text(restaurant.name, style: TextStyle(fontSize: 20), textAlign: TextAlign.center,),
-
-    ],
-  ),
-);

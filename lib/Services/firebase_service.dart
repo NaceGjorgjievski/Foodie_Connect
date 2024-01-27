@@ -38,6 +38,10 @@ class FireBaseService {
     }
   }
 
+  Future<void> signOut() async {
+    await _firebaseAuth.signOut();
+  }
+
   Future<void> createRestaurant({
     required String id,
     required String name,
@@ -90,7 +94,5 @@ class FireBaseService {
 
 
 
-  Future<void> signOut() async {
-    await _firebaseAuth.signOut();
-  }
+
 }
