@@ -21,12 +21,14 @@ class _ForewardPageState extends State<ForewardPage>{
     return Scaffold(
       backgroundColor: const Color(0xFFFF4B3A),
       body: Container(
-        padding: const EdgeInsets.only(top: 40,left: 10),
+        padding: const EdgeInsets.only(top: 20,left: 10,right: 10),
         child: user!=null ? null : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+
                   Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -42,10 +44,20 @@ class _ForewardPageState extends State<ForewardPage>{
                       width: 70,
                       fit: BoxFit.cover,
                     ),
-                  )
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      size: 40.0,
+                      color: Colors.black,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
                 ],
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 35),
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -61,6 +73,7 @@ class _ForewardPageState extends State<ForewardPage>{
                 ],
               ),
               Container(
+                margin: EdgeInsets.only(top: 40),
                 alignment: Alignment.centerLeft,
                 child:   Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
