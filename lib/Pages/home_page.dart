@@ -429,7 +429,7 @@
             }
 
             // Clicked Profile item
-            if(index==2){
+            //if(index==2){
               // If user is not Logged in go to Login Page
               if(user == null){
                 Navigator.push(
@@ -441,8 +441,6 @@
               else{
                 //TODO Naviate to profile page
               }
-
-            }
           },
           showSelectedLabels: false,
           showUnselectedLabels: false,

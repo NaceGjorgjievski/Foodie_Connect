@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
       ) {
 
     if (isLogin && title == 'Корисничко име') {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return TextField(
@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(20.0),
         ),
         backgroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
       ),
       onPressed:
       isLogin ? signInWithEmailAndPassword : createUserWithEmailAndPassword,
@@ -167,38 +167,60 @@ class _LoginPageState extends State<LoginPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Container(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  decoration: isLogin ? const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Color(0xFFFF4B3A),
-                        width: 3.0,
-                      )
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isLogin = true;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    decoration: isLogin
+                        ? const BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0xFFFF4B3A),
+                          width: 3.0,
+                        ),
+                      ),
                     )
-                  ) : null,
-                  child: const Text('Најaва', style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20.0,
+                        : null,
+                    child: const Text(
+                      'Најaва',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20.0,
+                      ),
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  decoration: isLogin==false ? const BoxDecoration(
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isLogin = false;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    decoration: !isLogin
+                        ? const BoxDecoration(
                       border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFFFF4B3A),
-                            width: 3.0,
-                          )
-                      )
-                  ) : null,
-                  child: const Text('Регистрирај се', style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20.0,
+                        bottom: BorderSide(
+                          color: Color(0xFFFF4B3A),
+                          width: 3.0,
+                        ),
+                      ),
+                    )
+                        : null,
+                    child: const Text(
+                      'Регистрирај се',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20.0,
+                      ),
                     ),
                   ),
-                )
+                ),
               ],
             )
           ],
@@ -249,7 +271,7 @@ class _LoginPageState extends State<LoginPage> {
           if(index == 0){
             Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage())
+                MaterialPageRoute(builder: (context) => const HomePage())
             );
           }
 
@@ -259,7 +281,7 @@ class _LoginPageState extends State<LoginPage> {
             if(user == null){
               Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginPage())
+                  MaterialPageRoute(builder: (context) => const LoginPage())
               );
             }
             // If user is Logged in go to Profile Page
@@ -273,7 +295,7 @@ class _LoginPageState extends State<LoginPage> {
         showUnselectedLabels: false,
         selectedItemColor: const Color(0xFFFF4B3A),
         iconSize: 35,
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
