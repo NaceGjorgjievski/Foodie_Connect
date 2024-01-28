@@ -27,7 +27,9 @@ class FireBaseService {
         email: email, password: password);
 
     User? user = _firebaseAuth.currentUser;
-
+    if (user != null) {
+      await user.updateDisplayName(username);
+    }
     // Adding user to database
     if(user != null){
       await _firestore.collection('users').doc(user.uid).set({
@@ -90,6 +92,30 @@ class FireBaseService {
       longitude: data['longitude'],
       imageUri: data['imageUri'],
     );
+  }
+
+
+  Future<void> addComment({
+    required String restaurantId,
+    required String username,
+    required String content,
+    required DateTime timestamp,
+  }) async {
+    try {
+      final CollectionReference commentsCollection = FirebaseFirestore.instance.collection('comments');
+
+      await commentsCollection.add({
+        'restaurantId': restaurantId,
+        'username': username,
+        'content': content,
+        'timestamp': timestamp,
+      });
+
+      print('Comment added successfully.');
+    } catch (e) {
+      print('Error adding comment: $e');
+      throw Exception('Error adding comment');
+    }
   }
 
 
