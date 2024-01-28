@@ -34,6 +34,7 @@
     List<Restaurant> comments = [];
     int _currentIndex = 0;
     Position? currentPosition;
+    bool isSearching = false;
 
     @override
     void initState(){
@@ -309,6 +310,14 @@
 
     @override
     Widget build(BuildContext context) {
+
+      //fillter restaurants
+      List<Restaurant> filteredRestaurants = restaurants.where((restaurant) {
+        final restaurantName = restaurant.name.toLowerCase();
+        final searchText = _controllerSearch.text.toLowerCase();
+        return restaurantName.contains(searchText);
+      }).toList();
+
       return Scaffold(
         body: Container(
           height: double.infinity,
@@ -386,29 +395,34 @@
                               ),
                               prefixIcon: const Icon(Icons.search),
                             ),
-                            onChanged: (text) {
-                              // Handle the input text changes
+                            onSubmitted: (String value) {
+                              setState(() {
+                                isSearching = true; // Set isSearching to true when user submits search query
+                              });
+                              // Filter restaurants when user presses Enter
+                              List<Restaurant> filteredRestaurants = restaurants.where((restaurant) {
+                                final restaurantName = restaurant.name.toLowerCase();
+                                final searchText = value.toLowerCase();
+                                return restaurantName.contains(searchText);
+                              }).toList();
                             },
                           ),
                         ),
                       ]
-
-
                   )
               ),
-
               Container(
                 margin: const EdgeInsets.only(top: 40),
                 height: 300,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.all(12),
-                  itemCount: restaurants.length,
-                  separatorBuilder: (context,index){
-                    return const SizedBox(width: 30,);
+                  itemCount: isSearching ? filteredRestaurants.length : restaurants.length,
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(width: 30);
                   },
-                  itemBuilder: (context,index){
-                    return buildCard(context,restaurants[index]);
+                  itemBuilder: (context, index) {
+                    return buildCard(context, isSearching ? filteredRestaurants[index] : restaurants[index]);
                   },
                 ),
               ),
@@ -426,7 +440,6 @@
                   MaterialPageRoute(builder: (context) => const HomePage())
               );
             }
-/*
             // Clicked Profile item
             if(index==2) {
               // If user is not Logged in go to Login Page
@@ -440,13 +453,7 @@
               else {
                 //TODO Naviate to profile page
               }
-            }*/
-      if (index == 3) {
-        // Log out when the Settings tab is tapped
-        if (user != null) {
-          signOut();
-        }
-      }
+            }
           },
           showSelectedLabels: false,
           showUnselectedLabels: false,
