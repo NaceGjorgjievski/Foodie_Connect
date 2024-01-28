@@ -74,16 +74,19 @@ class _ForewardPageState extends State<ForewardPage>{
               Container(
                 margin: const EdgeInsets.only(top: 40),
                 alignment: Alignment.centerLeft,
-                child:   Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Image.asset(
-                      'assets/images/people.png',
-                      width: 380,
-                      height: 370,
-                    )
-                  ],
+                child:   SingleChildScrollView( // Use SingleChildScrollView
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Image.asset(
+                        'assets/images/people.png',
+                        width: 380,
+                        height: 370,
+                      )
+                    ],
+                  ),
                 ),
               ),
             const SizedBox(height: 15),

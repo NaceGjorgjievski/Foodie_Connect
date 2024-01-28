@@ -419,7 +419,6 @@
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
-
             //Clicked Home item
             if(index == 0){
               Navigator.push(
@@ -427,20 +426,27 @@
                   MaterialPageRoute(builder: (context) => const HomePage())
               );
             }
-
+/*
             // Clicked Profile item
-            //if(index==2){
+            if(index==2) {
               // If user is not Logged in go to Login Page
-              if(user == null){
+              if (user == null) {
                 Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LoginPage())
                 );
               }
               // If user is Logged in go to Profile Page
-              else{
+              else {
                 //TODO Naviate to profile page
               }
+            }*/
+      if (index == 3) {
+        // Log out when the Settings tab is tapped
+        if (user != null) {
+          signOut();
+        }
+      }
           },
           showSelectedLabels: false,
           showUnselectedLabels: false,

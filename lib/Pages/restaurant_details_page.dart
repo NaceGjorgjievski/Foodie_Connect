@@ -6,6 +6,7 @@ import '../Services/firebase_service.dart';
 import 'home_page.dart';
 import 'map_page.dart';
 import 'package:intl/intl.dart';
+import 'package:foodie_connect/Pages/foreward_page.dart';
 
 
 class RestaurantDetailsPage extends StatefulWidget {
@@ -155,6 +156,12 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
           // width: double.infinity,
           child: ElevatedButton(
             onPressed: () async {
+                if (FirebaseAuth.instance.currentUser == null) {
+                Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ForewardPage()),
+                );}
+                else{
               // Show a dialog with an input field for adding a comment
               String? newComment = await showDialog<String>(
                 context: context,
@@ -172,9 +179,10 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                     actions: [
                       TextButton(
                         onPressed: () async {
-                          Navigator.of(context).pop();
+                        if (commentText != null && commentText!.isNotEmpty) {
+
+                        Navigator.of(context).pop();
                           try {
-                            print('Current User: ${FirebaseAuth.instance.currentUser}');
                             await FireBaseService().addComment(
                               restaurantId: widget.restaurant.id,
                               username: FirebaseAuth.instance.currentUser!.displayName ?? '',
@@ -194,17 +202,14 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                             print('Error adding comment: $e');
                             // Handle error gracefully
                           }
+                        }
                         },
                         child: const Text('Add'),
                       ),
                     ],
                   );
                 },
-              );
-
-              if (newComment != null && newComment.isNotEmpty) {
-                // Add the new comment to the database
-              }
+              );}
             },
             style: ElevatedButton.styleFrom(
               primary: const Color(0xFFFF4B3A), // Button color
