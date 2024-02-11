@@ -5,8 +5,10 @@
   import 'package:flutter/material.dart';
   import 'package:foodie_connect/Factories/marker_factory.dart';
   import 'package:foodie_connect/Models/restaurant.dart';
+import 'package:foodie_connect/Pages/favourites_page.dart';
   import 'package:foodie_connect/Pages/foreward_page.dart';
   import 'package:foodie_connect/Pages/login_register_page.dart';
+import 'package:foodie_connect/Pages/profile_page.dart';
   import 'package:foodie_connect/Pages/restaurant_details_page.dart';
   import 'package:foodie_connect/Pages/map_page.dart';
   import 'package:foodie_connect/Services/firebase_service.dart';
@@ -32,7 +34,7 @@
     final TextEditingController _controllerSearch = TextEditingController();
     List<Restaurant> restaurants = [];
     List<Restaurant> comments = [];
-    int _currentIndex = 0;
+    final int _currentIndex = 0;
     Position? currentPosition;
     bool isSearching = false;
 
@@ -207,6 +209,7 @@
       );
     }
 
+
     // Comment Button -> Needs Comment functionality in TODO
     Widget _commentButton(){
       return ElevatedButton(
@@ -281,7 +284,7 @@
             ),
 
 
-
+            /*
             FutureBuilder<List<Comment>>(
               future: fetchCommentsForRestaurant(restaurant.id),
               builder: (context, snapshot) {
@@ -299,6 +302,8 @@
                 }
               },
             ),
+
+             */
 
 
           ],
@@ -323,111 +328,113 @@
           height: double.infinity,
           width: double.infinity,
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                  padding: const EdgeInsets.only(top: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                      Icons.menu,
-                        size: 34.0,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {
-                      },
-                    ),
-                    Ink(
-                      decoration: const ShapeDecoration(
-                        color: Colors.white,
-                        shape: CircleBorder(),
-                        shadows: [
-                          BoxShadow(
-                            color: Colors.black,
-                            blurRadius: 4.0,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: IconButton(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
                           icon: const Icon(
-                            Icons.location_pin,
+                            Icons.menu,
                             size: 34.0,
                             color: Colors.black,
                           ),
                           onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => MapPage(restaurants: restaurants))
-                            );
                           },
                         ),
-                      ),
-                    )
-                  ],
-                )
-              ),
-
-              Container(
-                  padding: const EdgeInsets.only(top: 50),
-                  child:const Row(
-                      children: [Text("Каде ќе се јаде денес?", style: TextStyle(fontSize: 24)),]
-                  )
-              ),
-              Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  height: 50,
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 300,
-                          child: TextField(
-                            controller: _controllerSearch,
-                            decoration: InputDecoration(
-                              labelText: 'Пребарувај',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(40.0),
+                        Ink(
+                          decoration: const ShapeDecoration(
+                            color: Colors.white,
+                            shape: CircleBorder(),
+                            shadows: [
+                              BoxShadow(
+                                color: Colors.black,
+                                blurRadius: 4.0,
                               ),
-                              prefixIcon: const Icon(Icons.search),
-                            ),
-                            onSubmitted: (String value) {
-                              setState(() {
-                                isSearching = true; // Set isSearching to true when user submits search query
-                              });
-                              // Filter restaurants when user presses Enter
-                              List<Restaurant> filteredRestaurants = restaurants.where((restaurant) {
-                                final restaurantName = restaurant.name.toLowerCase();
-                                final searchText = value.toLowerCase();
-                                return restaurantName.contains(searchText);
-                              }).toList();
-                            },
+                            ],
                           ),
-                        ),
-                      ]
-                  )
-              ),
-              Container(
-                margin: const EdgeInsets.only(top: 40),
-                height: 300,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.all(12),
-                  itemCount: isSearching ? filteredRestaurants.length : restaurants.length,
-                  separatorBuilder: (context, index) {
-                    return const SizedBox(width: 30);
-                  },
-                  itemBuilder: (context, index) {
-                    return buildCard(context, isSearching ? filteredRestaurants[index] : restaurants[index]);
-                  },
+                          child: Center(
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.location_pin,
+                                size: 34.0,
+                                color: Colors.black,
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => MapPage(restaurants: restaurants))
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                      ],
+                    )
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
+
+                Container(
+                    padding: const EdgeInsets.only(top: 50),
+                    child:const Row(
+                        children: [Text("Каде ќе се јаде денес?", style: TextStyle(fontSize: 24)),]
+                    )
+                ),
+                Container(
+                    margin: const EdgeInsets.only(top: 20),
+                    height: 50,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 300,
+                            child: TextField(
+                              controller: _controllerSearch,
+                              decoration: InputDecoration(
+                                labelText: 'Пребарувај',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(40.0),
+                                ),
+                                prefixIcon: const Icon(Icons.search),
+                              ),
+                              onSubmitted: (String value) {
+                                setState(() {
+                                  isSearching = true; // Set isSearching to true when user submits search query
+                                });
+                                // Filter restaurants when user presses Enter
+                                List<Restaurant> filteredRestaurants = restaurants.where((restaurant) {
+                                  final restaurantName = restaurant.name.toLowerCase();
+                                  final searchText = value.toLowerCase();
+                                  return restaurantName.contains(searchText);
+                                }).toList();
+                              },
+                            ),
+                          ),
+                        ]
+                    )
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 40),
+                  height: 300,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.all(12),
+                    itemCount: isSearching ? filteredRestaurants.length : restaurants.length,
+                    separatorBuilder: (context, index) {
+                      return const SizedBox(width: 30);
+                    },
+                    itemBuilder: (context, index) {
+                      return buildCard(context, isSearching ? filteredRestaurants[index] : restaurants[index]);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -440,7 +447,14 @@
                   MaterialPageRoute(builder: (context) => const HomePage())
               );
             }
-            // Clicked Profile item
+            if(index == 1){
+              if (user != null){
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FavouritesPage())
+                );
+              }
+            }
             if(index==2) {
               // If user is not Logged in go to Login Page
               if (user == null) {
@@ -451,6 +465,10 @@
               }
               // If user is Logged in go to Profile Page
               else {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfilePage())
+                );
                 //TODO Naviate to profile page
               }
             }
@@ -477,4 +495,3 @@
       );
     }
   }
-

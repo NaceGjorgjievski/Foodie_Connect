@@ -21,16 +21,47 @@ class RestaurantDetailsPage extends StatefulWidget {
 
 class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   List<Comment> _comments = [];
+  User? user = FireBaseService().currentUser;
+  bool isFavourite = false;
 
   @override
   void initState() {
     super.initState();
     _comments = widget.comments;
+    if(user != null){
+      isRestaurantFavourite(user!.email!,widget.restaurant.id);
+    }
+  }
+
+  Future<void> isRestaurantFavourite(String email, String restaurantId) async{
+    bool tmp = await FireBaseService().isRestaurantFavourite(email, restaurantId);
+    setState(() {
+      isFavourite = tmp;
+    });
+  }
+
+  Future<void> addToFavourite() async {
+    if (user != null && user!.email != null) {
+      await FireBaseService().addRestaurantToFavourite(user!.email!, widget.restaurant.id);
+      setState(() {
+        isFavourite = true;
+      });
+    }
+  }
+
+  Future<void> removeFavourite() async {
+    if (user != null && user!.email != null) {
+      await FireBaseService().removeFavourite(user!.email!, widget.restaurant.id);
+    }
+    setState(() {
+      isFavourite = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         height: double.infinity,
         width: double.infinity,
@@ -67,18 +98,23 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                     ),
                     child: Center(
                       child: IconButton(
-                        icon: const Icon(
-                          Icons.location_pin,
+                        icon: !isFavourite ? const Icon(
+                          Icons.favorite_border,
                           size: 34.0,
-                          color: Colors.black,
+                          color: const Color(0xFFFF4B3A),
+                        )
+                        :
+                        Icon(
+                          Icons.favorite,
+                          size: 34.0,
+                          color: const Color(0xFFFF4B3A),
                         ),
                         onPressed: () {
-                          // Handle location icon press
-                          // Example navigation:
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => MapPage(restaurants: [widget.restaurant])),
-                          );
+                          if(!isFavourite){
+                            addToFavourite();
+                          }else{
+                            removeFavourite();
+                          }
                         },
                       ),
                     ),
@@ -170,11 +206,13 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
 
                   return AlertDialog(
                     title: const Text('Add Comment'),
-                    content: TextFormField(
-                      decoration: const InputDecoration(labelText: 'Enter your comment'),
-                      onChanged: (value) {
-                        commentText = value;
-                      },
+                    content: SingleChildScrollView(
+                      child: TextFormField(
+                        decoration: const InputDecoration(labelText: 'Enter your comment'),
+                        onChanged: (value) {
+                          commentText = value;
+                        },
+                      ),
                     ),
                     actions: [
                       TextButton(
@@ -207,6 +245,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                         child: const Text('Add'),
                       ),
                     ],
+
                   );
                 },
               );}
@@ -269,4 +308,3 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
     );
   }
 }
-

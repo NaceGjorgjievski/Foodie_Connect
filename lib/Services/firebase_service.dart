@@ -35,7 +35,8 @@ class FireBaseService {
       await _firestore.collection('users').doc(user.uid).set({
         'username': username,
         'email': email,
-        'password': password
+        'password': password,
+        'favourites': List<String>.empty(growable: true),
       });
     }
   }
@@ -118,7 +119,73 @@ class FireBaseService {
     }
   }
 
+  Future<void> addRestaurantToFavourite(String email, String restaurantId) async{
+    final CollectionReference users = _firestore.collection('users');
+    QuerySnapshot querySnapshot = await users.where('email', isEqualTo: email).get();
 
+    if(querySnapshot.docs.isNotEmpty){
+      DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+      List<String> favourites = List<String>.from(data['favourites']);
+      favourites.add(restaurantId);
+      await documentSnapshot.reference.update({'favourites': favourites});
+    }
+  }
 
+  Future<List<Restaurant>> getFavouriteRestaurants(String email) async{
+    final CollectionReference users = _firestore.collection('users');
+    QuerySnapshot querySnapshot = await users.where('email', isEqualTo: email).get();
+
+    if(querySnapshot.docs.isNotEmpty){
+      DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+      List<String> favouritesIds = List<String>.from(data['favourites']);
+
+      List<Restaurant> favourites = [];
+
+      for(var i=0;i<favouritesIds.length;i++){
+        Restaurant restaurant = await getRestaurant(favouritesIds[i]);
+        favourites.add(restaurant);
+      }
+
+      return favourites;
+    }
+    return [];
+  }
+
+  Future<bool> isRestaurantFavourite(String email,String restaurantId) async {
+    final CollectionReference users = _firestore.collection('users');
+    QuerySnapshot querySnapshot = await users.where('email', isEqualTo: email).get();
+
+    if(querySnapshot.docs.isNotEmpty){
+      DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+      List<String> favouritesIds = List<String>.from(data['favourites']);
+
+      for(var i=0;i<favouritesIds.length;i++){
+        print("In Favourite ${favouritesIds[i]}");
+      }
+
+      print("Search for$restaurantId");
+
+      if(favouritesIds.contains(restaurantId)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> removeFavourite(String email, String restaurantId) async{
+    final CollectionReference users = _firestore.collection('users');
+    QuerySnapshot querySnapshot = await users.where('email', isEqualTo: email).get();
+
+    if(querySnapshot.docs.isNotEmpty){
+      DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+      List<String> favourites = List<String>.from(data['favourites']);
+      favourites.remove(restaurantId);
+      await documentSnapshot.reference.update({'favourites': favourites});
+    }
+  }
 
 }
