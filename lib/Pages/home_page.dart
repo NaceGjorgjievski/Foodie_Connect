@@ -1,4 +1,4 @@
-  import 'dart:convert';
+import 'dart:convert';
   import 'dart:io';
   import 'package:cloud_firestore/cloud_firestore.dart';
   import 'package:firebase_auth/firebase_auth.dart';
@@ -439,7 +439,7 @@ import 'package:foodie_connect/Pages/profile_page.dart';
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
-          onTap: (index) {
+          onTap: (index) async {
             //Clicked Home item
             if(index == 0){
               Navigator.push(
@@ -458,10 +458,13 @@ import 'package:foodie_connect/Pages/profile_page.dart';
             if(index==2) {
               // If user is not Logged in go to Login Page
               if (user == null) {
-                Navigator.push(
+                var returnedUser = await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LoginPage())
                 );
+                setState(() {
+                  user = returnedUser;
+                });
               }
               // If user is Logged in go to Profile Page
               else {

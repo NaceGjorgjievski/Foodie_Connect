@@ -1,10 +1,15 @@
+import 'dart:collection';
+import 'dart:typed_data';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:foodie_connect/Models/restaurant.dart';
 
 class FireBaseService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   User? get currentUser => _firebaseAuth.currentUser;
 
@@ -37,6 +42,7 @@ class FireBaseService {
         'email': email,
         'password': password,
         'favourites': List<String>.empty(growable: true),
+        'profileImage': '',
       });
     }
   }
@@ -188,4 +194,55 @@ class FireBaseService {
     }
   }
 
+  Future<Map<String,String>>getUserInfo(String email) async {
+    final CollectionReference users = _firestore.collection('users');
+    QuerySnapshot querySnapshot = await users.where('email', isEqualTo: email).get();
+
+    if(querySnapshot.docs.isNotEmpty){
+      DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+      Map<String,String>userInfo = {
+        'username': data['username'],
+        'password' : data['password'],
+        'email': email,
+        'profileImage': data['profileImage'],
+      };
+      return userInfo;
+    }
+    return {};
+  }
+
+  Future<void> update(String username, String password, String email, Uint8List? file) async{
+    try{
+      await currentUser!.updateEmail(email);
+      await currentUser!.updatePassword(password);
+
+      final CollectionReference users = _firestore.collection('users');
+      QuerySnapshot querySnapshot = await users.where('email', isEqualTo: currentUser!.email!).get();
+
+
+
+
+      if(querySnapshot.docs.isNotEmpty){
+        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+        if(file != null){
+          String imageUrl = await uploadImageToStorage(username, file);
+          await documentSnapshot.reference.update({'profileImage': imageUrl});
+        }
+        await documentSnapshot.reference.update({'username': username,'email': email.toLowerCase(), 'password': password});
+      }
+    }
+    catch(err){
+      print(err);
+    }
+  }
+
+  Future<String> uploadImageToStorage(String name, Uint8List file) async{
+    Reference ref = _storage.ref().child(name);
+    UploadTask uploadTask = ref.putData(file);
+    TaskSnapshot snapshot = await uploadTask;
+    String downloadUrl = await snapshot.ref.getDownloadURL();
+    return downloadUrl;
+  }
 }
