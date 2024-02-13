@@ -183,6 +183,7 @@ import 'package:foodie_connect/Pages/profile_page.dart';
             restaurantId: data['restaurantId'],
             username: data['username'],
             timestamp: (data['timestamp'] as Timestamp).toDate(),
+            image: data['image'] ?? '',
           );
         }).toList();
 

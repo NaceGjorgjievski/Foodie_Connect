@@ -4,10 +4,11 @@ import 'package:foodie_connect/Models/restaurant.dart';
 import 'package:foodie_connect/Models/comments.dart';
 import '../Services/firebase_service.dart';
 import 'home_page.dart';
-import 'map_page.dart';
+import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:foodie_connect/Pages/foreward_page.dart';
-
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 class RestaurantDetailsPage extends StatefulWidget {
   final Restaurant restaurant;
@@ -23,6 +24,9 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   List<Comment> _comments = [];
   User? user = FireBaseService().currentUser;
   bool isFavourite = false;
+
+  Uint8List? _image;
+  File? selectedIMage;
 
   @override
   void initState() {
@@ -56,6 +60,85 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
     setState(() {
       isFavourite = false;
     });
+  }
+
+  void showImagePickerOption(BuildContext context) {
+    showModalBottomSheet(
+        backgroundColor: Colors.blue[100],
+        context: context,
+        builder: (builder) {
+          return Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height / 4.5,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        _pickImageFromGallery();
+                      },
+                      child: const SizedBox(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.image,
+                              size: 70,
+                            ),
+                            Text("Галерија")
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        _pickImageFromCamera();
+                      },
+                      child: const SizedBox(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.camera_alt,
+                              size: 70,
+                            ),
+                            Text("Камера")
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  //Gallery
+  Future _pickImageFromGallery() async {
+    final returnImage =
+    await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (returnImage == null) return;
+    setState(() {
+      selectedIMage = File(returnImage.path);
+      _image = File(returnImage.path).readAsBytesSync();
+    });
+    Navigator.of(context).pop(); //close the model sheet
+  }
+
+//Camera
+  Future _pickImageFromCamera() async {
+    final returnImage =
+    await ImagePicker().pickImage(source: ImageSource.camera);
+    if (returnImage == null) return;
+    setState(() {
+      selectedIMage = File(returnImage.path);
+      _image = File(returnImage.path).readAsBytesSync();
+    });
+    Navigator.of(context).pop();
   }
 
   @override
@@ -179,6 +262,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                   return ListTile(
                     title: Text(comment.content),
                     subtitle: Text('By: ${comment.username} at: $formattedTimestamp'),
+                    trailing: comment.image!='' ? Image.network(comment.image) : null,
                   );
                 },
               ),
@@ -203,49 +287,76 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                 context: context,
                 builder: (BuildContext context) {
                   String? commentText = '';
+                  return SingleChildScrollView(
+                    child: AlertDialog(
+                      title: const Text('Add Comment'),
+                      content: Column(
+                        children: [
+                          TextFormField(
+                            decoration: const InputDecoration(labelText: 'Enter your comment'),
+                            autofocus: true,
+                            onChanged: (value) {
+                              commentText = value;
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          ElevatedButton( onPressed: (){
+                            showImagePickerOption(context);
+                          }, child: Text("Додади фотографија")),
+                          SizedBox(height: 20,),
+                          if(_image != null)
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: MemoryImage(_image!),
+                                    fit: BoxFit.cover,
+                                  )
+                              ),
+                            )
+                          //CircleAvatar(radius: 50, backgroundImage: MemoryImage(_image!))
 
-                  return AlertDialog(
-                    title: const Text('Add Comment'),
-                    content: SingleChildScrollView(
-                      child: TextFormField(
-                        decoration: const InputDecoration(labelText: 'Enter your comment'),
-                        onChanged: (value) {
-                          commentText = value;
-                        },
+                        ],
                       ),
+                      actions: [
+                        TextButton(
+                          onPressed: () async {
+                            if (commentText != null && commentText!.isNotEmpty) {
+
+                              Navigator.of(context).pop();
+                              try {
+                                Comment curr = await FireBaseService().addComment(
+                                  restaurantId: widget.restaurant.id,
+                                  username: FirebaseAuth.instance.currentUser!.displayName ?? '',
+                                  content: commentText ?? '',
+                                  timestamp: DateTime.now(),
+                                  file: _image,
+                                );
+
+                                setState(() {
+                                  /*
+                                  _comments.add(Comment(
+                                    id: 'generated_id',
+                                    content: commentText ?? '',
+                                    restaurantId: widget.restaurant.id,
+                                    username: FirebaseAuth.instance.currentUser!.displayName ?? '',
+                                    timestamp: DateTime.now(),
+                                    image:
+                                  ));*/
+                                  _comments.add(curr);
+                                });
+                              } catch (e) {
+                                print('Error adding comment: $e');
+                                // Handle error gracefully
+                              }
+                            }
+                          },
+                          child: const Text('Add'),
+                        ),
+                      ],
+
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () async {
-                        if (commentText != null && commentText!.isNotEmpty) {
-
-                        Navigator.of(context).pop();
-                          try {
-                            await FireBaseService().addComment(
-                              restaurantId: widget.restaurant.id,
-                              username: FirebaseAuth.instance.currentUser!.displayName ?? '',
-                              content: commentText ?? '',
-                              timestamp: DateTime.now(),
-                            );
-                            setState(() {
-                              _comments.add(Comment(
-                                id: 'generated_id',
-                                content: commentText ?? '',
-                                restaurantId: widget.restaurant.id,
-                                username: FirebaseAuth.instance.currentUser!.displayName ?? '',
-                                timestamp: DateTime.now(),
-                              ));
-                            });
-                          } catch (e) {
-                            print('Error adding comment: $e');
-                            // Handle error gracefully
-                          }
-                        }
-                        },
-                        child: const Text('Add'),
-                      ),
-                    ],
-
                   );
                 },
               );}

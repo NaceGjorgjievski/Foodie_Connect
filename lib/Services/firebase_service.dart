@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:foodie_connect/Models/restaurant.dart';
+import 'package:foodie_connect/Models/comments.dart';
 
 class FireBaseService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -102,13 +103,20 @@ class FireBaseService {
   }
 
 
-  Future<void> addComment({
+  Future<Comment> addComment({
     required String restaurantId,
     required String username,
     required String content,
     required DateTime timestamp,
+    Uint8List? file
   }) async {
     try {
+      String imageUrl = '';
+      if(file != null){
+        String path = 'commentImages/' + username + timestamp.toString();
+        imageUrl = await uploadImageToStorage(path, file);
+      }
+
       final CollectionReference commentsCollection = FirebaseFirestore.instance.collection('comments');
 
       await commentsCollection.add({
@@ -116,9 +124,16 @@ class FireBaseService {
         'username': username,
         'content': content,
         'timestamp': timestamp,
+        'image': imageUrl,
       });
-
+      
       print('Comment added successfully.');
+      return Comment(id: 'id',
+          content: content,
+          restaurantId: restaurantId,
+          username: username,
+          timestamp: timestamp,
+          image: imageUrl);
     } catch (e) {
       print('Error adding comment: $e');
       throw Exception('Error adding comment');

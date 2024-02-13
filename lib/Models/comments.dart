@@ -4,6 +4,7 @@ class Comment {
   final String restaurantId;
   final String username;
   final DateTime timestamp;
+  final String image;
 
   Comment({
     required this.id,
@@ -11,6 +12,6 @@ class Comment {
     required this.restaurantId,
     required this.username,
     required this.timestamp,
-
+    required this.image,
   });
 }
