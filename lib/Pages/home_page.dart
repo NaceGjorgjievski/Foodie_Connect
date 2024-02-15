@@ -33,7 +33,7 @@ import 'package:foodie_connect/Pages/profile_page.dart';
     User? user = FireBaseService().currentUser;
     final TextEditingController _controllerSearch = TextEditingController();
     List<Restaurant> restaurants = [];
-    List<Restaurant> comments = [];
+    //List<Restaurant> comments = [];
     final int _currentIndex = 0;
     Position? currentPosition;
     bool isSearching = false;
@@ -169,7 +169,7 @@ import 'package:foodie_connect/Pages/profile_page.dart';
       return photoUri;
     }
 
-
+    /*
     Future<List<Comment>> fetchCommentsForRestaurant(String restaurantId) async {
       try {
         final CollectionReference commentsCollection = FirebaseFirestore.instance.collection('comments');
@@ -194,6 +194,8 @@ import 'package:foodie_connect/Pages/profile_page.dart';
       }
     }
 
+     */
+
 
     // Sign-out User
     Future<void> signOut() async {
@@ -203,48 +205,14 @@ import 'package:foodie_connect/Pages/profile_page.dart';
       });
     }
 
-    Widget _signOutButton() {
-      return ElevatedButton(
-        onPressed: signOut,
-        child: const Text('Sign Out'),
-      );
-    }
-
-
-    // Comment Button -> Needs Comment functionality in TODO
-    Widget _commentButton(){
-      return ElevatedButton(
-          onPressed: () async {
-            //If user is not logged in
-            if(user == null){
-              final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ForewardPage())
-              );
-
-              if(result != null){
-                setState(() {
-                  user = result;
-                });
-              }
-            }
-
-            //TODO: Comment Functionality
-            else{
-              print('Logged in');
-            }
-          },
-          child: const Text("Comment")
-      );
-    }
 
     Widget buildCard(BuildContext context, Restaurant restaurant) => GestureDetector(
       onTap: () async {
-        List<Comment> fetchedComments = await fetchCommentsForRestaurant(restaurant.id);
+        //List<Comment> fetchedComments = await fetchCommentsForRestaurant(restaurant.id);
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RestaurantDetailsPage(restaurant: restaurant, comments: fetchedComments),
+            builder: (context) => RestaurantDetailsPage(restaurant: restaurant, /*comments: fetchedComments*/),
 
           ),
         );

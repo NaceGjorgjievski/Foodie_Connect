@@ -12,9 +12,9 @@ import 'package:image_picker/image_picker.dart';
 
 class RestaurantDetailsPage extends StatefulWidget {
   final Restaurant restaurant;
-  final List<Comment> comments;
+  //final List<Comment> comments;
 
-  const RestaurantDetailsPage({Key? key, required this.restaurant, required this.comments}) : super(key: key);
+  const RestaurantDetailsPage({Key? key, required this.restaurant,/* required this.comments*/}) : super(key: key);
 
   @override
   _RestaurantDetailsPageState createState() => _RestaurantDetailsPageState();
@@ -31,10 +31,17 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   @override
   void initState() {
     super.initState();
-    _comments = widget.comments;
+    getComments(widget.restaurant.id);
     if(user != null){
       isRestaurantFavourite(user!.email!,widget.restaurant.id);
     }
+  }
+
+  Future<void>getComments(String id) async{
+    List<Comment> comments = await FireBaseService().getCommentsForRestaurant(id);
+    setState(() {
+      _comments = comments;
+    });
   }
 
   Future<void> isRestaurantFavourite(String email, String restaurantId) async{
@@ -144,7 +151,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: Container(
         height: double.infinity,
         width: double.infinity,
@@ -354,6 +361,9 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                           },
                           child: const Text('Add'),
                         ),
+                        TextButton(onPressed: (){
+                          Navigator.pop(context);
+                        }, child: Text('Cancel'))
                       ],
 
                     ),

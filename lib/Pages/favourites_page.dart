@@ -70,7 +70,7 @@ class _FavouritesState extends State<FavouritesPage>{
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => RestaurantDetailsPage(restaurant: restaurant, comments: []),
+          builder: (context) => RestaurantDetailsPage(restaurant: restaurant),
 
         ),
       );

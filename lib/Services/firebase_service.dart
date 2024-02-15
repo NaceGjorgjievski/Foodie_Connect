@@ -140,6 +140,30 @@ class FireBaseService {
     }
   }
 
+  Future<List<Comment>> getCommentsForRestaurant(String restaurantId) async{
+    try {
+      final CollectionReference commentsCollection = _firestore.collection('comments');
+      QuerySnapshot querySnapshot = await commentsCollection.where('restaurantId', isEqualTo: restaurantId).get();
+
+      List<Comment> comments = querySnapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        return Comment(
+          id: doc.id,
+          content: data['content'],
+          restaurantId: data['restaurantId'],
+          username: data['username'],
+          timestamp: (data['timestamp'] as Timestamp).toDate(),
+          image: data['image'] ?? '',
+        );
+      }).toList();
+
+      return comments;
+    } catch (e) {
+      print('Error fetching comments: $e');
+      throw Exception('Error fetching comments');
+    }
+  }
+
   Future<void> addRestaurantToFavourite(String email, String restaurantId) async{
     final CollectionReference users = _firestore.collection('users');
     QuerySnapshot querySnapshot = await users.where('email', isEqualTo: email).get();
