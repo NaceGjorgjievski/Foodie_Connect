@@ -1,5 +1,7 @@
+import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:foodie_connect/Models/restaurant.dart';
 import 'package:foodie_connect/Models/comments.dart';
 import '../Services/firebase_service.dart';
@@ -150,6 +152,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
@@ -269,7 +272,17 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                   return ListTile(
                     title: Text(comment.content),
                     subtitle: Text('By: ${comment.username} at: $formattedTimestamp'),
-                    trailing: comment.image!='' ? Image.network(comment.image) : null,
+                    trailing: comment.image!='' ? GestureDetector(
+                      onTap: () {
+                        final imageProvider = Image.network(comment.image).image;
+                        showImageViewer(context, imageProvider, doubleTapZoomable: true, swipeDismissible: true, onViewerDismissed: (){
+                          setState(() {
+
+                          });
+                        });
+                      },
+                      child: Image.network(comment.image),
+                    )  : null,
                   );
                 },
               ),
