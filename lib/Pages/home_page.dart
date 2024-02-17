@@ -1,23 +1,17 @@
-import 'dart:convert';
-  import 'dart:io';
-  import 'package:cloud_firestore/cloud_firestore.dart';
+  import 'dart:convert';
   import 'package:firebase_auth/firebase_auth.dart';
   import 'package:flutter/material.dart';
-  import 'package:foodie_connect/Factories/marker_factory.dart';
+  import 'package:foodie_connect/Factories/restaurant_factory.dart';
   import 'package:foodie_connect/Models/restaurant.dart';
-import 'package:foodie_connect/Pages/favourites_page.dart';
-  import 'package:foodie_connect/Pages/foreward_page.dart';
+  import 'package:foodie_connect/Pages/favourites_page.dart';
   import 'package:foodie_connect/Pages/login_register_page.dart';
-import 'package:foodie_connect/Pages/profile_page.dart';
+  import 'package:foodie_connect/Pages/profile_page.dart';
   import 'package:foodie_connect/Pages/restaurant_details_page.dart';
   import 'package:foodie_connect/Pages/map_page.dart';
   import 'package:foodie_connect/Services/firebase_service.dart';
-  import 'package:google_maps_flutter/google_maps_flutter.dart';
   import 'package:http/http.dart' as http;
-  import 'package:flutter_dotenv/flutter_dotenv.dart';
   import 'package:geolocator/geolocator.dart';
   import 'package:permission_handler/permission_handler.dart';
-  import 'package:foodie_connect/Models/comments.dart';
 
 
   class HomePage extends StatefulWidget {
@@ -33,10 +27,11 @@ import 'package:foodie_connect/Pages/profile_page.dart';
     User? user = FireBaseService().currentUser;
     final TextEditingController _controllerSearch = TextEditingController();
     List<Restaurant> restaurants = [];
-    //List<Restaurant> comments = [];
     final int _currentIndex = 0;
+    final int numberOfRestaurants = 5;
     Position? currentPosition;
     bool isSearching = false;
+    bool isLoading = false;
 
     @override
     void initState(){
@@ -75,17 +70,15 @@ import 'package:foodie_connect/Pages/profile_page.dart';
     }
 
     void fetchRestaurants() async{
-      final apiKey = dotenv.env['API_KEY'];
-
-      if (apiKey == null) {
-        print('API key is missing in the .env file');
-        return;
-      }
+      final apiKey = "AIzaSyA8RTRGVvvPIuuqNnlfFSMVRb7L8CgvEdY";
+      setState(() {
+        isLoading = true;
+      });
 
       const url = 'https://places.googleapis.com/v1/places:searchNearby';
       final requestData = {
         "includedTypes": ["restaurant"],
-        "maxResultCount": 5,
+        "maxResultCount": numberOfRestaurants,
         "locationRestriction": {
           "circle": {
             "center": {"latitude": currentPosition!.latitude, "longitude": currentPosition!.longitude},
@@ -111,32 +104,12 @@ import 'package:foodie_connect/Pages/profile_page.dart';
         if (response.statusCode == 200) {
           final responseData = jsonDecode(response.body);
           final places = responseData['places'] as List<dynamic>;
-          for(var place in places){
-            var id = place['name'];
-            final name = place['displayName']['text'];
-            final latitude = place['location']['latitude'];
-            final longitude = place['location']['longitude'];
-            final image = place['photos'][0]['name'];
+          List<Restaurant>tmp = await RestaurantFactory.createRestaurants(places: places);
+          setState(() {
+            restaurants = tmp;
+            isLoading = false;
+          });
 
-            var isInDb = await FireBaseService().isRestaurantInDatabase(id);
-            if(!isInDb){
-              final imageUri = await fetchPhoto(image);
-              await FireBaseService().createRestaurant(
-                  id: id,
-                  name: name,
-                  latitude: latitude,
-                  longitude: longitude,
-                  imageUri: imageUri);
-            }
-
-            Restaurant restaurant = await FireBaseService().getRestaurant(id);
-
-            setState(() {
-              restaurants.add(restaurant);
-            });
-
-
-          }
         } else {
           // Handle errors
           print('Error: ${response.statusCode} - ${response.body}');
@@ -148,71 +121,12 @@ import 'package:foodie_connect/Pages/profile_page.dart';
 
     }
 
-
-    Future<String> fetchPhoto(String name)async {
-      final apiKey = dotenv.env['API_KEY'];
-      final url = "https://places.googleapis.com/v1/$name/media?key=$apiKey&maxHeightPx=300&maxWidthPx=220&skipHttpRedirect=true";
-      String photoUri = "";
-      try {
-        final response = await http.get(Uri.parse(url));
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          // Handle the data as needed
-          photoUri = data['photoUri'];
-        } else {
-          print('Error: ${response.statusCode}');
-        }
-      } catch (e) {
-        print('Exception: $e');
-      }
-      return photoUri;
-    }
-
-    /*
-    Future<List<Comment>> fetchCommentsForRestaurant(String restaurantId) async {
-      try {
-        final CollectionReference commentsCollection = FirebaseFirestore.instance.collection('comments');
-        QuerySnapshot querySnapshot = await commentsCollection.where('restaurantId', isEqualTo: restaurantId).get();
-
-        List<Comment> comments = querySnapshot.docs.map((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          return Comment(
-            id: doc.id,
-            content: data['content'],
-            restaurantId: data['restaurantId'],
-            username: data['username'],
-            timestamp: (data['timestamp'] as Timestamp).toDate(),
-            image: data['image'] ?? '',
-          );
-        }).toList();
-
-        return comments;
-      } catch (e) {
-        print('Error fetching comments: $e');
-        throw Exception('Error fetching comments');
-      }
-    }
-
-     */
-
-
-    // Sign-out User
-    Future<void> signOut() async {
-      await FireBaseService().signOut();
-      setState(() {
-        user = null;
-      });
-    }
-
-
     Widget buildCard(BuildContext context, Restaurant restaurant) => GestureDetector(
       onTap: () async {
-        //List<Comment> fetchedComments = await fetchCommentsForRestaurant(restaurant.id);
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RestaurantDetailsPage(restaurant: restaurant, /*comments: fetchedComments*/),
+            builder: (context) => RestaurantDetailsPage(restaurant: restaurant),
 
           ),
         );
@@ -251,30 +165,6 @@ import 'package:foodie_connect/Pages/profile_page.dart';
               style: const TextStyle(fontSize: 20),
               textAlign: TextAlign.center,
             ),
-
-
-            /*
-            FutureBuilder<List<Comment>>(
-              future: fetchCommentsForRestaurant(restaurant.id),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator(); // Show loading indicator while fetching comments
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final comments = snapshot.data ?? [];
-                  return Text(
-                    'Comments: ${comments.length}',
-                    style: const TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  );
-                }
-              },
-            ),
-
-             */
-
-
           ],
         ),
       ),
@@ -386,10 +276,10 @@ import 'package:foodie_connect/Pages/profile_page.dart';
                         ]
                     )
                 ),
-                Container(
+                 Container(
                   margin: const EdgeInsets.only(top: 40),
                   height: 300,
-                  child: ListView.separated(
+                  child: isLoading ? Container(width: 50, height: 50, child: CircularProgressIndicator()) : ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.all(12),
                     itemCount: isSearching ? filteredRestaurants.length : restaurants.length,
@@ -409,7 +299,7 @@ import 'package:foodie_connect/Pages/profile_page.dart';
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) async {
-            //Clicked Home item
+
             if(index == 0){
               Navigator.push(
                   context,
@@ -428,12 +318,16 @@ import 'package:foodie_connect/Pages/profile_page.dart';
               // If user is not Logged in go to Login Page
               if (user == null) {
                 var returnedUser = await Navigator.push(
+                //Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LoginPage())
                 );
+
                 setState(() {
                   user = returnedUser;
+                  //user = FireBaseService().currentUser;
                 });
+
               }
               // If user is Logged in go to Profile Page
               else {
@@ -441,7 +335,6 @@ import 'package:foodie_connect/Pages/profile_page.dart';
                     context,
                     MaterialPageRoute(builder: (context) => const ProfilePage())
                 );
-                //TODO Naviate to profile page
               }
             }
           },

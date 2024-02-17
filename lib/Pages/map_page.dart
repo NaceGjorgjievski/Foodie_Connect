@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:foodie_connect/Factories/marker_factory.dart';
 import 'package:foodie_connect/Models/restaurant.dart';
+import 'package:foodie_connect/Pages/restaurant_details_page.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
@@ -48,30 +49,40 @@ class _MapPageState extends State<MapPage> {
   }
 
   Widget _buildRestaurantCard(){
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.7),
-            spreadRadius: 5,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+    return GestureDetector(
+      onTap: () async {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RestaurantDetailsPage(restaurant: selectedRestaurant!),
           ),
-        ]
-      ),
-      margin: const EdgeInsets.only(top: 20,left: 20,right: 20),
-      padding: const EdgeInsets.only(top:20,bottom: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          ClipRRect(
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            child: Image.network(selectedRestaurant!.imageUri,width: 100,height: 100,fit: BoxFit.cover,),
-          ),
-          Text(selectedRestaurant!.name, style: const TextStyle(fontSize: 20),)
-        ],
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.7),
+                spreadRadius: 5,
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ]
+        ),
+        margin: const EdgeInsets.only(top: 20,left: 20,right: 20),
+        padding: const EdgeInsets.only(top:20,bottom: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.network(selectedRestaurant!.imageUri,width: 100,height: 100,fit: BoxFit.cover,),
+            ),
+            Text(selectedRestaurant!.name, style: const TextStyle(fontSize: 20),)
+          ],
+        ),
       ),
     );
   }

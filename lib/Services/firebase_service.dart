@@ -1,6 +1,4 @@
-import 'dart:collection';
 import 'dart:typed_data';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -8,6 +6,14 @@ import 'package:foodie_connect/Models/restaurant.dart';
 import 'package:foodie_connect/Models/comments.dart';
 
 class FireBaseService {
+  static final FireBaseService _instance = FireBaseService._internal();
+
+  factory FireBaseService(){
+    return _instance;
+  }
+
+  FireBaseService._internal();
+
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -52,7 +58,7 @@ class FireBaseService {
     await _firebaseAuth.signOut();
   }
 
-  Future<void> createRestaurant({
+  Future<Restaurant> createRestaurant({
     required String id,
     required String name,
     required double latitude,
@@ -67,6 +73,13 @@ class FireBaseService {
         'longitude': longitude,
         'imageUri': imageUri,
       });
+
+      return Restaurant(
+          id: id,
+          name: name,
+          latitude: latitude,
+          longitude: longitude,
+          imageUri: imageUri);
 
     } on FirebaseAuthException catch (e){
       rethrow;
@@ -207,12 +220,6 @@ class FireBaseService {
       Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
       List<String> favouritesIds = List<String>.from(data['favourites']);
 
-      for(var i=0;i<favouritesIds.length;i++){
-        print("In Favourite ${favouritesIds[i]}");
-      }
-
-      print("Search for$restaurantId");
-
       if(favouritesIds.contains(restaurantId)){
         return true;
       }
@@ -251,28 +258,30 @@ class FireBaseService {
     return {};
   }
 
-  Future<void> update(String username, String password, String email, Uint8List? file) async{
+  Future<bool> update(String username, String password, String email, Uint8List? file) async{
     try{
+      String prevEmail = currentUser!.email!;
       await currentUser!.updateEmail(email);
       await currentUser!.updatePassword(password);
 
       final CollectionReference users = _firestore.collection('users');
-      QuerySnapshot querySnapshot = await users.where('email', isEqualTo: currentUser!.email!).get();
+      QuerySnapshot querySnapshot = await users.where('email', isEqualTo: prevEmail).get();
 
 
 
 
       if(querySnapshot.docs.isNotEmpty){
         DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
-        Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
         if(file != null){
           String imageUrl = await uploadImageToStorage(username, file);
           await documentSnapshot.reference.update({'profileImage': imageUrl});
         }
         await documentSnapshot.reference.update({'username': username,'email': email.toLowerCase(), 'password': password});
       }
+      return true;
     }
     catch(err){
+      return false;
       print(err);
     }
   }

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:foodie_connect/Pages/favourites_page.dart';
 import 'package:foodie_connect/Pages/home_page.dart';
+import 'package:foodie_connect/Pages/profile_page.dart';
+import 'package:foodie_connect/StrategyPattern/account_strategy.dart';
+import 'package:foodie_connect/StrategyPattern/login_strategy.dart';
+import 'package:foodie_connect/StrategyPattern/signup_strategy.dart';
 import '../Services/firebase_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,24 +20,34 @@ class _LoginPageState extends State<LoginPage> {
   String? errorMessage = '';
   bool isLogin = true;
 
-  int _currentIndex = 2;
+  final int _currentIndex = 2;
 
   final TextEditingController _controllerUsername = TextEditingController();
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
 
+  AccountStrategy? strategy;
+
+
+  /*
   Future<void> signInWithEmailAndPassword() async {
     try {
       await FireBaseService().signInWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
       User? user = FireBaseService().currentUser;
       Navigator.pop(context, user);
+      //Navigator.push(
+      //    context,
+      //    MaterialPageRoute(builder: (context) => const HomePage())
+      //);
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
       });
     }
   }
+
+
 
   Future<void> createUserWithEmailAndPassword() async {
     try {
@@ -48,6 +63,12 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
+
+   */
+
+
+
+
 
   Widget _entryField(
       String title,
@@ -77,6 +98,8 @@ class _LoginPageState extends State<LoginPage> {
     return Text(errorMessage == '' ? '' : 'Humm ? $errorMessage');
   }
 
+
+  /*
   Widget _submitButton() {
 
     return ElevatedButton(
@@ -97,6 +120,54 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+   */
+
+
+  Widget _submitButton() {
+
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        backgroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+      ),
+      onPressed: (){
+        if(isLogin){
+          strategy = LoginStrategy(context: context, email: _controllerEmail.text, password: _controllerPassword.text);
+        }else{
+          strategy = RegisterStrategy(context: context,username: _controllerUsername.text, email: _controllerEmail.text, password: _controllerPassword.text);
+        }
+
+        strategy!.action();
+        setState(() {
+          user = FireBaseService().currentUser;
+        });
+
+        /*
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage())
+        );
+
+         */
+
+
+        //Navigator.pop(context, user);
+      },
+      child: Text(isLogin ? 'Најава' : 'Регистрирај се', style: const TextStyle(
+        color: Colors.black,
+        fontSize: 18.0,
+      ),
+      ),
+    );
+  }
+
+
+
+
+
   Widget _loginOrRegisterButton() {
     return TextButton(
       onPressed: () {
@@ -106,7 +177,6 @@ class _LoginPageState extends State<LoginPage> {
       },
       child: Text(isLogin ? 'Немаш профил? Регистрирај се' : 'Имаш профил? Најави се', style: const TextStyle(
           fontSize: 16.0,
-
         ),
       ),
     );
@@ -266,29 +336,40 @@ class _LoginPageState extends State<LoginPage> {
         ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          //Clicked Home item
+        onTap: (index) async {
+
           if(index == 0){
             Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const HomePage())
             );
           }
-
-          // Clicked Profile item
-          if(index==2){
-            // If user is not Logged in go to Login Page
-            if(user == null){
+          if(index == 1){
+            if (user != null){
               Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FavouritesPage())
+              );
+            }
+          }
+          if(index==2) {
+            // If user is not Logged in go to Login Page
+            if (user == null) {
+              var returnedUser = await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginPage())
               );
+              setState(() {
+                user = returnedUser;
+              });
             }
             // If user is Logged in go to Profile Page
-            else{
-              //TODO Naviate to profile page
+            else {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage())
+              );
             }
-
           }
         },
         showSelectedLabels: false,

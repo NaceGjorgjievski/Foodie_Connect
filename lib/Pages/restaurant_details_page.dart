@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:foodie_connect/Models/restaurant.dart';
 import 'package:foodie_connect/Models/comments.dart';
+import 'package:foodie_connect/Pages/favourites_page.dart';
+import 'package:foodie_connect/Pages/login_register_page.dart';
+import 'package:foodie_connect/Pages/profile_page.dart';
 import '../Services/firebase_service.dart';
 import 'home_page.dart';
 import 'dart:io';
@@ -14,18 +17,18 @@ import 'package:image_picker/image_picker.dart';
 
 class RestaurantDetailsPage extends StatefulWidget {
   final Restaurant restaurant;
-  //final List<Comment> comments;
 
-  const RestaurantDetailsPage({Key? key, required this.restaurant,/* required this.comments*/}) : super(key: key);
+  const RestaurantDetailsPage({Key? key, required this.restaurant}) : super(key: key);
 
   @override
-  _RestaurantDetailsPageState createState() => _RestaurantDetailsPageState();
+  State<RestaurantDetailsPage> createState() => _RestaurantDetailsPageState();
 }
 
 class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   List<Comment> _comments = [];
   User? user = FireBaseService().currentUser;
   bool isFavourite = false;
+  String? commentText = '';
 
   Uint8List? _image;
   File? selectedIMage;
@@ -123,10 +126,10 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
               ),
             ),
           );
-        });
+        }
+    );
   }
 
-  //Gallery
   Future _pickImageFromGallery() async {
     final returnImage =
     await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -138,7 +141,6 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
     Navigator.of(context).pop(); //close the model sheet
   }
 
-//Camera
   Future _pickImageFromCamera() async {
     final returnImage =
     await ImagePicker().pickImage(source: ImageSource.camera);
@@ -175,7 +177,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                       color: Colors.black,
                     ),
                     onPressed: () {
-                      // Handle menu icon press
+
                     },
                   ),
                   Ink(
@@ -194,7 +196,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                         icon: !isFavourite ? const Icon(
                           Icons.favorite_border,
                           size: 34.0,
-                          color: const Color(0xFFFF4B3A),
+                          color: Color(0xFFFF4B3A),
                         )
                         :
                         Icon(
@@ -233,7 +235,6 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Show restaurant image in a container with shadow
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Image.network(
@@ -259,7 +260,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
             const SizedBox(height: 20),
             // Show comments
             const Text(
-              'Comments:',
+              'Коментари:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
@@ -271,7 +272,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                   String formattedTimestamp = DateFormat.yMMMd().add_jm().format(comment.timestamp);
                   return ListTile(
                     title: Text(comment.content),
-                    subtitle: Text('By: ${comment.username} at: $formattedTimestamp'),
+                    subtitle: Text('Од: ${comment.username} во: $formattedTimestamp'),
                     trailing: comment.image!='' ? GestureDetector(
                       onTap: () {
                         final imageProvider = Image.network(comment.image).image;
@@ -297,23 +298,28 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
           child: ElevatedButton(
             onPressed: () async {
                 if (FirebaseAuth.instance.currentUser == null) {
-                Navigator.push(
+                var returnedUser = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ForewardPage()),
-                );}
+                );
+                setState(() {
+                  user = returnedUser;
+                });
+                }
+
                 else{
               // Show a dialog with an input field for adding a comment
               String? newComment = await showDialog<String>(
                 context: context,
                 builder: (BuildContext context) {
-                  String? commentText = '';
+                  //String? commentText = '';
                   return SingleChildScrollView(
                     child: AlertDialog(
-                      title: const Text('Add Comment'),
+                      title: const Text('Додади Коментар'),
                       content: Column(
                         children: [
                           TextFormField(
-                            decoration: const InputDecoration(labelText: 'Enter your comment'),
+                            decoration: const InputDecoration(labelText: 'Внеси коментар'),
                             autofocus: true,
                             onChanged: (value) {
                               commentText = value;
@@ -355,15 +361,6 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                                 );
 
                                 setState(() {
-                                  /*
-                                  _comments.add(Comment(
-                                    id: 'generated_id',
-                                    content: commentText ?? '',
-                                    restaurantId: widget.restaurant.id,
-                                    username: FirebaseAuth.instance.currentUser!.displayName ?? '',
-                                    timestamp: DateTime.now(),
-                                    image:
-                                  ));*/
                                   _comments.add(curr);
                                 });
                               } catch (e) {
@@ -372,11 +369,11 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                               }
                             }
                           },
-                          child: const Text('Add'),
+                          child: const Text('Додади'),
                         ),
                         TextButton(onPressed: (){
                           Navigator.pop(context);
-                        }, child: Text('Cancel'))
+                        }, child: Text('Откажи'))
                       ],
 
                     ),
@@ -385,13 +382,13 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
               );}
             },
             style: ElevatedButton.styleFrom(
-              primary: const Color(0xFFFF4B3A), // Button color
+              backgroundColor: const Color(0xFFFF4B3A), // Button color
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30), // Rounded corners
               ),
             ),
             child: const Text(
-              'Comment',
+              'Коментирај',
               style: TextStyle(
                 fontWeight: FontWeight.bold, // Bold text
                 fontSize: 16, // Font size
@@ -401,28 +398,46 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // Set current index as needed
-        onTap: (index) {
-          // Handle bottom navigation item taps
-          if (index == 0) {
-            // Handle Home tap
+        currentIndex: 0,
+        onTap: (index) async {
+
+          if(index == 0){
             Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage())
             );
-          } else if (index == 2) {
-            // Handle Settings tap
-            // Example navigation:
-            Navigator.push(
-              context,
-              //TODO change the redirect
-              MaterialPageRoute(builder: (context) => HomePage()),
-            );
+          }
+          if(index == 1){
+            if (user != null){
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FavouritesPage())
+              );
+            }
+          }
+          if(index==2) {
+            // If user is not Logged in go to Login Page
+            if (user == null) {
+              var returnedUser = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage())
+              );
+              setState(() {
+                user = returnedUser;
+              });
+            }
+            // If user is Logged in go to Profile Page
+            else {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage())
+              );
+            }
           }
         },
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        selectedItemColor: Color(0xFFFF4B3A),
+        selectedItemColor: const Color(0xFFFF4B3A),
         iconSize: 35,
         items: const [
           BottomNavigationBarItem(

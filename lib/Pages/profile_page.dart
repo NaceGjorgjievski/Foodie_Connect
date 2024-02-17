@@ -1,8 +1,7 @@
-import 'dart:collection';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:foodie_connect/Pages/favourites_page.dart';
 import 'package:foodie_connect/Pages/home_page.dart';
 import 'package:foodie_connect/Pages/login_register_page.dart';
 import 'package:foodie_connect/Services/firebase_service.dart';
@@ -23,14 +22,14 @@ class _ProfilePageState extends State<ProfilePage>{
   User? user = FireBaseService().currentUser;
   final int _currentIndex = 2;
   String imageUrl = "";
+  bool isLoading = false;
+  bool? updateStatus;
 
 
 
   @override
   void initState() {
     super.initState();
-    print("I AM IN PROFILE PAGE AND THE USER IS ${user!.email!}");
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await getUserInfo();
       setState(() {
@@ -45,8 +44,6 @@ class _ProfilePageState extends State<ProfilePage>{
     _controllerEmail = TextEditingController(text: userInfo['email']);
     _controllerPassword = TextEditingController(text: userInfo['password']);
     imageUrl = userInfo['profileImage']!;
-
-    print(imageUrl);
   }
 
   Uint8List? _image;
@@ -55,7 +52,6 @@ class _ProfilePageState extends State<ProfilePage>{
   TextEditingController _controllerUsername = TextEditingController();
   TextEditingController _controllerEmail = TextEditingController();
   TextEditingController _controllerPassword = TextEditingController();
-
 
   // Sign-out User
   Future<void> signOut() async {
@@ -80,7 +76,14 @@ class _ProfilePageState extends State<ProfilePage>{
   }
 
   Future<void> updateProfile() async{
-    await FireBaseService().update(_controllerUsername.text,_controllerPassword.text,_controllerEmail.text,_image);
+    setState(() {
+      isLoading = true;
+    });
+    bool sts = await FireBaseService().update(_controllerUsername.text,_controllerPassword.text,_controllerEmail.text,_image);
+    setState(() {
+      isLoading = false;
+      updateStatus = sts;
+    });
   }
 
   Widget _updateButton(){
@@ -147,7 +150,6 @@ class _ProfilePageState extends State<ProfilePage>{
         });
   }
 
-  //Gallery
   Future _pickImageFromGallery() async {
     final returnImage =
     await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -156,10 +158,9 @@ class _ProfilePageState extends State<ProfilePage>{
       selectedIMage = File(returnImage.path);
       _image = File(returnImage.path).readAsBytesSync();
     });
-    Navigator.of(context).pop(); //close the model sheet
+    Navigator.of(context).pop();
   }
 
-//Camera
   Future _pickImageFromCamera() async {
     final returnImage =
     await ImagePicker().pickImage(source: ImageSource.camera);
@@ -192,7 +193,7 @@ class _ProfilePageState extends State<ProfilePage>{
                           imageUrl
                       )
                       :
-                      NetworkImage(
+                      const NetworkImage(
                           "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
                       ),
                     ),
@@ -248,6 +249,12 @@ class _ProfilePageState extends State<ProfilePage>{
                     ),
                     const SizedBox(height: 20),
                     _updateButton(),
+                    if(isLoading)
+                      CircularProgressIndicator(),
+                    if(updateStatus != null && updateStatus == true)
+                      const Text("Успешно е ажуриран вашиот профил",style: TextStyle(color: Colors.green),),
+                    if(updateStatus != null && updateStatus == false)
+                    const Text("Грешка при ажурирање",style: TextStyle(color: Colors.red),),
                     const SizedBox(height: 30),
                     _signOutButton(),
                   ],
@@ -260,26 +267,39 @@ class _ProfilePageState extends State<ProfilePage>{
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          //Clicked Home item
+        onTap: (index) async {
+
           if(index == 0){
             Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const HomePage())
             );
           }
-          // Clicked Profile item
+          if(index == 1){
+            if (user != null){
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FavouritesPage())
+              );
+            }
+          }
           if(index==2) {
             // If user is not Logged in go to Login Page
             if (user == null) {
-              Navigator.push(
+              var returnedUser = await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginPage())
               );
+              setState(() {
+                user = returnedUser;
+              });
             }
             // If user is Logged in go to Profile Page
             else {
-              //TODO Naviate to profile page
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage())
+              );
             }
           }
         },

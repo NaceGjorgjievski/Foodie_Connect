@@ -1,22 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:foodie_connect/Factories/marker_factory.dart';
 import 'package:foodie_connect/Models/restaurant.dart';
-import 'package:foodie_connect/Pages/foreward_page.dart';
 import 'package:foodie_connect/Pages/home_page.dart';
 import 'package:foodie_connect/Pages/login_register_page.dart';
+import 'package:foodie_connect/Pages/profile_page.dart';
 import 'package:foodie_connect/Pages/restaurant_details_page.dart';
-import 'package:foodie_connect/Pages/map_page.dart';
 import 'package:foodie_connect/Services/firebase_service.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:foodie_connect/Models/comments.dart';
 
 
 class FavouritesPage extends StatefulWidget {
@@ -25,7 +14,6 @@ class FavouritesPage extends StatefulWidget {
   @override
   State<FavouritesPage> createState() => _FavouritesState();
 }
-
 
 class _FavouritesState extends State<FavouritesPage>{
 
@@ -49,29 +37,12 @@ class _FavouritesState extends State<FavouritesPage>{
     });
   }
 
-  // Sign-out User
-  Future<void> signOut() async {
-    await FireBaseService().signOut();
-    setState(() {
-      user = null;
-    });
-  }
-
-  Widget _signOutButton() {
-    return ElevatedButton(
-      onPressed: signOut,
-      child: const Text('Sign Out'),
-    );
-  }
-
   Widget buildCard(BuildContext context, Restaurant restaurant) => GestureDetector(
     onTap: () async {
-      //List<Comment> fetchedComments = await fetchCommentsForRestaurant(restaurant.id);
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => RestaurantDetailsPage(restaurant: restaurant),
-
         ),
       );
     },
@@ -109,30 +80,6 @@ class _FavouritesState extends State<FavouritesPage>{
             style: const TextStyle(fontSize: 20),
             textAlign: TextAlign.center,
           ),
-
-
-          /*
-            FutureBuilder<List<Comment>>(
-              future: fetchCommentsForRestaurant(restaurant.id),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator(); // Show loading indicator while fetching comments
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final comments = snapshot.data ?? [];
-                  return Text(
-                    'Comments: ${comments.length}',
-                    style: const TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  );
-                }
-              },
-            ),
-
-             */
-
-
         ],
       ),
     ),
@@ -142,7 +89,7 @@ class _FavouritesState extends State<FavouritesPage>{
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: EdgeInsets.only(top: 30,right: 30,left: 30),
+        margin: const EdgeInsets.only(top: 30,right: 30,left: 30),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -168,7 +115,7 @@ class _FavouritesState extends State<FavouritesPage>{
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
+        onTap: (index) async {
           //Clicked Home item
           if(index == 0){
             Navigator.push(
@@ -176,18 +123,31 @@ class _FavouritesState extends State<FavouritesPage>{
                 MaterialPageRoute(builder: (context) => const HomePage())
             );
           }
-          // Clicked Profile item
+          if(index == 1){
+            if (user != null){
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FavouritesPage())
+              );
+            }
+          }
           if(index==2) {
             // If user is not Logged in go to Login Page
             if (user == null) {
-              Navigator.push(
+              var returnedUser = await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginPage())
               );
+              setState(() {
+                user = returnedUser;
+              });
             }
             // If user is Logged in go to Profile Page
             else {
-              //TODO Naviate to profile page
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage())
+              );
             }
           }
         },
