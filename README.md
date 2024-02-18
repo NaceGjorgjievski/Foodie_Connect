@@ -1,16 +1,24 @@
 # foodie_connect
 
-A new Flutter project.
+FoodieConnect е крос-платформска мобилна апликација дизајнирана за љубителите на храна. Апликацијата им овозможува на корисниците да откриваат нови ресторани, кафулиња и јадење на отворено во нивната близина и да делат фотографии од јадењето. 
 
-## Getting Started
+Користени технологии:
+Flutter - користено за градење на апликацијата
+FireBase - користено за чување на податоците на апликацијата (корисници, слики, омилени ресторанти, коментари и сл.)
 
-This project is a starting point for a Flutter application.
+Карактеристики:
+• Login & Register функционалност со помош на FireBase
+• Singleton - искористено за FireBase сервисот кој ни овозможува 
+автентикација на корисници и комуникација со базата на податоци
+• Factory method pattern - искористено за инстанцирање на објекти од 
+Restourant класата и за креирање на маркери на мапата
+• Strategy pattern - искористено во делот за најавување и 
+регистрирање на корисници
+• Користи камера 
+• Користи Локациски сервиси
+• Custom UI елементи
+• Веб Сервиси
+• State Managment
+• FireStore & Storage – storage за складирање на слики
+• Google Maps - за прикажување на локацијата на рестораните
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
