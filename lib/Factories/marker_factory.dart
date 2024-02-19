@@ -11,15 +11,32 @@ class MarkerFactory {
     String? snippet,
   }) {
     return Marker(
-      markerId: MarkerId(markerId),
-      position: position,
-      infoWindow: InfoWindow(
-        title: title ?? '',
-        snippet: snippet ?? '',
-      ),
-      onTap: (){
-        onMarkerTap(markerId, restaurant);
-      }
+        markerId: MarkerId(markerId),
+        position: position,
+        infoWindow: InfoWindow(
+          title: title ?? '',
+          snippet: snippet ?? '',
+        ),
+        onTap: (){
+          onMarkerTap(markerId, restaurant);
+        }
+    );
+  }
+
+  static Marker createMyLocationMarker({
+    required LatLng position,
+    required onMarkerTap,
+  }){
+    return Marker(
+        markerId: const MarkerId('my location'),
+        position: position,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow: const InfoWindow(
+          title: "My location",
+        ),
+        onTap: (){
+          onMarkerTap();
+        }
     );
   }
 

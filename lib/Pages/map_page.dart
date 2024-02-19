@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:foodie_connect/Factories/marker_factory.dart';
 import 'package:foodie_connect/Models/restaurant.dart';
 import 'package:foodie_connect/Pages/restaurant_details_page.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 class MapPage extends StatefulWidget {
 
   final List<Restaurant> restaurants;
+  final Position? myPosition;
 
-  const MapPage({Key? key, required this.restaurants}) : super(key: key);
+  const MapPage({Key? key, required this.restaurants, required this.myPosition}) : super(key: key);
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -31,7 +33,11 @@ class _MapPageState extends State<MapPage> {
         onMarkerTap: _handleMarkerTap,
       );
     }).toList();
+    if(widget.myPosition != null){
+      _markers.add(MarkerFactory.createMyLocationMarker(onMarkerTap: _myLocationTap,position: LatLng(widget.myPosition!.latitude, widget.myPosition!.longitude)));
+    }
   }
+
 
   static const _initialCameraPosition = CameraPosition(
     target: LatLng(42.00443918426004, 21.409539069200985),
@@ -45,6 +51,12 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       isTapped = true;
       selectedRestaurant = r;
+    });
+  }
+
+  void _myLocationTap(){
+    setState(() {
+      isTapped = false;
     });
   }
 
@@ -93,41 +105,41 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios,
-                  size: 34.0,
-                  color: Colors.black,
+        body: Column(
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    size: 34.0,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            height: 400,
-            width: double.infinity,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: GoogleMap(
-                initialCameraPosition: _initialCameraPosition,
-                myLocationButtonEnabled: false,
-                zoomControlsEnabled: false,
-                markers: Set.from(_markers),
-              ),
-            )
-          ),
-          if(isTapped)
-            _buildRestaurantCard()
+              ],
+            ),
+            Container(
+                padding: const EdgeInsets.all(12),
+                height: 400,
+                width: double.infinity,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: GoogleMap(
+                    initialCameraPosition: _initialCameraPosition,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    markers: Set.from(_markers),
+                  ),
+                )
+            ),
+            if(isTapped)
+              _buildRestaurantCard()
 
-        ],
-      )
+          ],
+        )
 
     );
   }
